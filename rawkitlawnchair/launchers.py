@@ -155,3 +155,22 @@ class MarksAndSpencer_Launcher(BasicLauncher):
 
     def _ctrl_launcher(self, ctrl_code):
         self._launcher.ctrl_transfer(0x21, 0x09, 0x02, 0x01, ctrl_code)
+
+# source: http://code.google.com/p/pyrocket/source/browse/trunk/src/rocket_backend.py
+
+class NinjaGizmos_Striker2(BasicLauncher):
+    NAME            = 'Ninja Gizmos - Striker II'
+    LAUNCHER_DIDS   = [(0x1130, 0x0202)]
+    AMMO_COUNT      = 3
+
+class Unknown_Original(BasicLauncher):
+    NAME            = 'Unknown - Original'
+    LAUNCHER_DIDS   = [(0x1941, 0x8021)]
+
+class Unknown_Webcam(BasicLauncher):
+    NAME            = 'Unknown - Webcam'
+    LAUNCHER_DIDS   = [(0x0a81, 0x0701)]
+
+class Unknown_Wireless(BasicLauncher):
+    NAME            = 'Unknown - Wireless'
+    LAUNCHER_DIDS   = [(0x0a81, 0xff01)]
