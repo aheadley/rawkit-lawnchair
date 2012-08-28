@@ -3,7 +3,7 @@ import functools
 
 class AmmoEmptyError(Exception): pass
 
-class BaseLauncher(object):
+class BasicLauncher(object):
     LAUNCHER_DIDS   = []
     CAMERA_DIDS     = []
     _index = None
@@ -60,7 +60,7 @@ class BaseLauncher(object):
 
     move_up = move_down = move_left = move_right = fire = stop
 
-class CameraLauncher(BaseLauncher):
+class CameraLauncher(BasicLauncher):
     @classmethod
     def find_cameras(cls):
         return [cam for (v,p) in cls.CAMERA_DIDS \
@@ -105,3 +105,53 @@ class DreamCheeky_StormOIC(CameraLauncher):
     def _ctrl_launcher(self, byte1, byte2):
         self._launcher.ctrl_transfer(0x21, 0x09, 0, 0,
             [byte1, byte2, 0, 0, 0, 0, 0, 0])
+
+def marks_and_spencer_action(func):
+    @functools.wraps(func)
+    def wrapped(self):
+        self._ctrl_launcher(self.CODE_INIT_A)
+        self._ctrl_launcher(self.CODE_INIT_B)
+        return func()
+    return wrapped
+
+class MarksAndSpencer_Launcher(BasicLauncher):
+    NAME            = 'Marks & Spencer - Launcher'
+    LAUNCHER_DIDS   = [(0x1130, 0x0202)]
+    AMMO_COUNT      = 3
+
+    CODE_STOP       = [0, 0, 0, 0, 0, 0, 8, 8]
+    CODE_LEFT       = [0, 1, 0, 0, 0, 0, 8, 8]
+    CODE_RIGHT      = [0, 0, 1, 0, 0, 0, 8, 8]
+    CODE_UP         = [0, 0, 0, 1, 0, 0, 8, 8]
+    CODE_DOWN       = [0, 0, 0, 0, 1, 0, 8, 8]
+    CODE_FIRE       = [0, 0, 0, 0, 0, 1, 8, 8]
+    CODE_INIT_A     = [85, 83, 66, 67, 0, 0, 4, 0]
+    CODE_INIT_B     = [85, 83, 66, 67, 0, 64, 2, 0]
+
+    @marks_and_spencer_action
+    def stop(self):
+        self._ctrl_launcher(self.CODE_STOP)
+
+    @marks_and_spencer_action
+    def move_up(self):
+        self._ctrl_launcher(self.CODE_UP)
+
+    @marks_and_spencer_action
+    def move_down(self):
+        self._ctrl_launcher(self.CODE_DOWN)
+
+    @marks_and_spencer_action
+    def move_left(self):
+        self._ctrl_launcher(self.CODE_LEFT)
+
+    @marks_and_spencer_action
+    def move_right(self):
+        self._ctrl_launcher(self.CODE_RIGHT)
+
+    @BasicLauncher.watch_ammo
+    @marks_and_spencer_action
+    def fire(self):
+        self._ctrl_launcher(self.CODE_FIRE)
+
+    def _ctrl_launcher(self, ctrl_code):
+        self._launcher.ctrl_transfer(0x21, 0x09, 0x02, 0x01, ctrl_code)
